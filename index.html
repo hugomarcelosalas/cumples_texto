@@ -23,6 +23,9 @@
 <li class="marker-item" data-marker-id="reserva-es" data-side="left" data-target="reserva-es">
 <i class="fa-solid fa-calendar-check"></i> Formulario de Reserva
                 </li>
+<li class="marker-item" data-marker-id="reserva-lista-es" data-side="left" data-target="reserva-lista-es">
+<i class="fa-solid fa-clipboard-check"></i> Reserva lista
+                </li>
 <li class="marker-item" data-marker-id="confirmacion-es" data-side="left" data-target="confirmacion-es">
 <i class="fa-solid fa-circle-check"></i> confirmacion
                 </li>
@@ -121,11 +124,95 @@
 </div>
 <div class="block-controls"><button class="btn-primary btn-add-block" type="button">＋ Añadir bloque</button></div></div>
 </div>
+<!-- Reserva lista (ES) -->
+<div class="content-block" id="block-reserva-lista-es">
+<div class="block-header">
+<h2>Reserva lista (ES)</h2>
+<div class="block-actions">
+<button class="btn-action btn-edit" title="Editar contenido"><i class="fa-solid fa-pen"></i></button>
+</div>
+</div>
+<div class="block-body">
+<div class="sub-block copyable-sub-block">
+<div class="sub-block-header">
+<h4>Bloque 1</h4>
+<div class="sub-block-actions"><button class="btn-action btn-copy-sub" title="Copiar contenido" type="button"><i class="fa-solid fa-copy"></i></button><button class="btn-action btn-edit-sub" title="Editar bloque" type="button"><i class="fa-solid fa-pen"></i></button><button class="btn-action btn-delete-sub" title="Eliminar bloque" type="button"><i class="fa-solid fa-trash"></i></button></div></div>
+<div class="editable-area" contenteditable="false">
+<p><strong>Lista la reserva, recibirás un correo electrónico con todos los detalles de la misma y la información para el pago. Gracias</strong></p>
+<p>Dos días antes de la fiesta nos contactaremos para confirmar el menú, que puede ser:</p>
+<p><strong>Menú 1: Pizzas (3 porciones por niño)</strong></p>
+<p><strong>Menú 2: 1 Hot dog por niño</strong></p>
+<p><strong>PERO LA MISMA OPCION PARA TODOS</strong></p>
+<p>También para confirmar la cantidad de niños y explicarle las normas del parque.</p>
+<p><strong>Importante! menores de 5 años deberan entrar acompañados por un adulto.</strong></p>
+<p>Recuerda que para que la reserva tenga validez, debes abonar en los próximos 2 días hábiles:</p>
+<p><strong>Importe de reserva</strong></p>
+<ul>
+<li>Para Fiesta X-treme de lunes a jueves (90€)</li>
+<li>Para Fiesta X de viernes a domingo (90€)</li>
+<li>Para Fiesta X-Treme de viernes a domingo (155€)</li>
+</ul>
+<p><strong>Las opciones de pago son:</strong></p>
+<ul>
+<li>En nuestro parque en efectivo o tarjeta</li>
+<li>Mediante transferencia bancaria con el numero de cuenta y concepto que recibió por correo.</li>
+</ul>
+<p>La diferencia (con un minimo de 10 personas) se abonara el mismo día al terminar la fiesta</p>
+<p>Por ultimo puede acceder en los links debajo a la carta de catering por si desea reservar con nosotros (no se admite cancelación) y se puede confirmar maximo dos dias antes del cumple.</p>
+<p>🥪 <a href="http://www.costajump.com/catering.jpg" rel="noopener noreferrer" target="_blank">http://www.costajump.com/catering.jpg</a></p>
+<p><strong>Muchas gracias.</strong></p>
+</div>
+</div>
+<div class="block-controls"><button class="btn-primary btn-add-block" type="button">＋ Añadir bloque</button></div>
+</div>
+</div>
 <!-- 3. Confirmación (ES) -->
 <div class="content-block" id="block-confirmacion-es">
 <div class="block-header"><h2>Confirmación de Cumpleaños (ES)</h2><div class="block-actions"><button class="btn-action btn-edit" title="Editar contenido"><i class="fa-solid fa-pen"></i></button></div></div>
 <div class="generator-form-box"><h3>Generador de Mensaje de Confirmación</h3><div class="form-grid"><div class="form-group"><label for="nombre-es">Nombre del Cumpleañero/a:</label><input id="nombre-es" placeholder="Ej. Pepe" type="text"/></div><div class="form-group"><label for="dia-es">Día del evento:</label><input id="dia-es" type="date"/></div><div class="form-group"><label for="hora-es">Hora de inicio:</label><select id="hora-es"><option value="">Selecciona hora</option><option value="11:00">11:00</option><option value="12:00">12:00</option><option value="13:00">13:00</option><option value="14:00">14:00</option><option value="15:00">15:00</option><option value="16:00">16:00</option><option value="17:00">17:00</option><option value="18:00">18:00</option><option value="19:00">19:00</option></select></div><div class="form-group"><label>Modalidad:</label><div class="radio-group"><label><input checked="" name="modo-es" type="radio" value="X"/> X (1 hora)</label><label><input name="modo-es" type="radio" value="Xtreme"/> Xtreme (2 horas)</label></div></div></div><button class="btn-primary" id="btn-generar-es">Generar Mensaje Automático</button></div>
 <div class="block-body"><div class="sub-block copyable-sub-block" contenteditable="false" id="msg-container-es"><div class="sub-block-header"><h4>Bloque 1</h4><div class="sub-block-actions"><button class="btn-action btn-copy-sub" title="Copiar contenido" type="button"><i class="fa-solid fa-copy"></i></button><button class="btn-action btn-edit-sub" title="Editar bloque" type="button"><i class="fa-solid fa-pen"></i></button><button class="btn-action btn-delete-sub" title="Eliminar bloque" type="button"><i class="fa-solid fa-trash"></i></button></div></div><p class="generated-output">Rellena el formulario y pulsa «Generar Mensaje Automático».</p></div><div class="sub-block copyable-sub-block"><div class="sub-block-header"><h4>Bloque 2</h4><div class="sub-block-actions"><button class="btn-action btn-copy-sub" title="Copiar contenido"><i class="fa-solid fa-copy"></i></button><button class="btn-action btn-edit-sub" title="Editar bloque" type="button"><i class="fa-solid fa-pen"></i></button><button class="btn-action btn-delete-sub" title="Eliminar bloque" type="button"><i class="fa-solid fa-trash"></i></button></div></div><div class="editable-area confirmation-image-area" contenteditable="false"><label class="image-upload-label"><span>📷 Cargar imagen manualmente</span><input accept="image/*" class="confirmation-image-input" type="file"/></label><div class="confirmation-image-preview"></div></div></div><div class="sub-block copyable-sub-block"><div class="sub-block-header"><h4>Bloque 3</h4><div class="sub-block-actions"><button class="btn-action btn-copy-sub" title="Copiar contenido"><i class="fa-solid fa-copy"></i></button><button class="btn-action btn-edit-sub" title="Editar bloque" type="button"><i class="fa-solid fa-pen"></i></button><button class="btn-action btn-delete-sub" title="Eliminar bloque" type="button"><i class="fa-solid fa-trash"></i></button></div></div><div class="editable-area" contenteditable="false"><p>- <a href="https://app.waiverforever.com/pending/F6hzHHqFot1746377649" rel="noopener noreferrer" target="_blank">https://app.waiverforever.com/pending/F6hzHHqFot1746377649</a></p><hr/><p>🎂 Si deseas añadir catering te compartimos el enlace a nuestras opciones:</p><p>👉 Recuerda que deben confirmarse hoy antes de las 20:00, y no se admiten cancelaciones.</p><p>(Válido solo para reservas hechas con al menos 3 días de antelación.)</p><ul><li>🥪 <a href="http://www.costajump.com/catering.jpg" rel="noopener noreferrer" target="_blank">Carta de catering</a><br/><a href="https://www.costajump.com/catering.jpg" rel="noopener noreferrer" target="_blank">https://www.costajump.com/catering.jpg</a></li></ul><p>📲 Si tienes cualquier duda o consulta, no dudes en escribirnos.<br/>¡Muchas gracias!</p></div></div><div class="block-controls"><button class="btn-primary btn-add-block" type="button">＋ Añadir bloque</button></div></div>
+</div>
+<!-- Booking Ready (EN) -->
+<div class="content-block" id="block-booking-ready-en">
+<div class="block-header">
+<h2>Booking Ready (EN)</h2>
+<div class="block-actions">
+<button class="btn-action btn-edit" title="Edit content"><i class="fa-solid fa-pen"></i></button>
+</div>
+</div>
+<div class="block-body">
+<div class="sub-block copyable-sub-block">
+<div class="sub-block-header">
+<h4>Block 1</h4>
+<div class="sub-block-actions"><button class="btn-action btn-copy-sub" title="Copy content" type="button"><i class="fa-solid fa-copy"></i></button><button class="btn-action btn-edit-sub" title="Edit block" type="button"><i class="fa-solid fa-pen"></i></button><button class="btn-action btn-delete-sub" title="Delete block" type="button"><i class="fa-solid fa-trash"></i></button></div></div>
+<div class="editable-area" contenteditable="false">
+<p><strong>The booking is already done. You will receive an email with all the details and the payment information. Thank you!</strong></p>
+<p>Two days before the party, we will contact you to confirm the menu, which can be:</p>
+<p><strong>Menu 1: Pizzas (3 slices per child)</strong></p>
+<p><strong>Menu 2: 1 Hot Dog per child</strong></p>
+<p><strong>BUT THE SAME OPTION MUST BE CHOSEN FOR ALL CHILDREN</strong></p>
+<p>We will also confirm the number of children attending and explain the park rules.</p>
+<p><strong>Important! Children under 5 must be accompanied by an adult.</strong></p>
+<p>Please remember that for the reservation to be valid, a deposit must be made within the next 2 business days:</p>
+<p><strong>Reservation fee:</strong></p>
+<ul>
+<li>For X-treme Party from Monday to Thursday: €90</li>
+<li>For X Party from Friday to Sunday: €90</li>
+<li>For X-Treme Party from Friday to Sunday: €155</li>
+</ul>
+<p><strong>Payment options:</strong></p>
+<ul>
+<li>At our park (cash or card)</li>
+<li>By bank transfer using the account number and reference provided in the email</li>
+</ul>
+<p>The remaining balance (for a minimum of 10 children) must be paid on the day of the party, after the event.</p>
+<p>Finally, you can use the links below to check our catering options if you'd like to book with us (please note cancellations are not accepted), and selections can be confirmed up to two days before the birthday.</p>
+<p>🥪 <a href="http://www.costajump.com/catering.jpg" rel="noopener noreferrer" target="_blank">Catering menu</a></p>
+<p><strong>Thank you very much!</strong></p>
+</div>
+</div>
+<div class="block-controls"><button class="btn-primary btn-add-block" type="button">＋ Add block</button></div>
+</div>
 </div>
 <!-- 3. Confirmation (EN) -->
 <div class="content-block" id="block-info-en">
@@ -211,6 +298,9 @@
                 </li>
 <li class="marker-item" data-marker-id="booking-en" data-side="right" data-target="booking-en">
 <i class="fa-solid fa-calendar-check"></i> Booking Form
+                </li>
+<li class="marker-item" data-marker-id="booking-ready-en" data-side="right" data-target="booking-ready-en">
+<i class="fa-solid fa-clipboard-check"></i> Booking Ready
                 </li>
 <li class="marker-item" data-marker-id="confirmation-en" data-side="right" data-target="confirmation-en">
 <i class="fa-solid fa-circle-check"></i> Confirmation

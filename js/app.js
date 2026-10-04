@@ -1,6 +1,6 @@
 document.addEventListener('DOMContentLoaded', () => {
     const center = document.querySelector('.content-center');
-    const STORAGE_KEY = 'cumples_texto_local_state_v2';
+    const STORAGE_KEY = 'cumples_texto_local_state_v3';
     let restoringState = false;
     let saveTimer = null;
 

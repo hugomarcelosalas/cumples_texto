@@ -111,7 +111,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!element) return '';
                 const clone = element.cloneNode(true);
                 clone.querySelectorAll('[data-wired]').forEach(el => el.removeAttribute('data-wired'));
-                clone.querySelectorAll('.confirmation-image-preview img, .confirmation-image-delete').forEach(el => el.remove());
+                clone.querySelectorAll('.confirmation-image-preview img, .confirmation-image-delete, .generated-delete').forEach(el => el.remove());
                 return clone.innerHTML;
             };
             const state = {
@@ -509,10 +509,57 @@ document.addEventListener('DOMContentLoaded', async () => {
         });
     });
 
-    // Generator: keep the generated message inside Block 1 only.
+    // Generator: keep exactly ONE generated message in Block 1.
     function setupGenerator(lang) {
         const btn = document.getElementById(`btn-generar-${lang}`);
-        if (!btn) return;
+        const target = document.getElementById(`msg-container-${lang}`);
+        if (!btn || !target) return;
+
+        const defaultText = lang === 'es'
+            ? 'Rellena el formulario y pulsa «Generar Mensaje Automático».'
+            : 'Fill in the form and click “Generate Automatic Message”.';
+
+        function ensureGeneratedUI() {
+            let output = target.querySelector('.generated-output');
+            if (!output) {
+                output = document.createElement('p');
+                output.className = 'generated-output';
+                output.textContent = defaultText;
+                const header = target.querySelector('.sub-block-header');
+                if (header) target.insertBefore(output, header.nextSibling);
+                else target.prepend(output);
+            }
+
+            let deleteBtn = target.querySelector('.generated-delete');
+            if (!deleteBtn) {
+                deleteBtn = document.createElement('button');
+                deleteBtn.type = 'button';
+                deleteBtn.className = 'btn-action generated-delete';
+                deleteBtn.title = lang === 'es' ? 'Borrar texto generado' : 'Delete generated text';
+                deleteBtn.innerHTML = '<i class="fa-solid fa-trash"></i> ' + (lang === 'es' ? 'Borrar texto' : 'Delete text');
+                const header = target.querySelector('.sub-block-header');
+                const actions = header?.querySelector('.sub-block-actions');
+                if (actions) actions.appendChild(deleteBtn);
+                else target.appendChild(deleteBtn);
+
+                deleteBtn.addEventListener('click', e => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    const current = target.querySelector('.generated-output');
+                    if (current) {
+                        current.innerHTML = '';
+                        current.textContent = defaultText;
+                    }
+                    showToast(lang === 'es' ? 'Texto generado eliminado.' : 'Generated text deleted.');
+                    scheduleSave();
+                });
+            }
+            return output;
+        }
+
+        // If a saved state already contains a generated message, restore its delete button.
+        ensureGeneratedUI();
+
         btn.addEventListener('click', () => {
             const nombre = document.getElementById(`nombre-${lang}`)?.value.trim() || 'Cumpleañero/a';
             const fechaInput = document.getElementById(`dia-${lang}`)?.value;
@@ -560,15 +607,20 @@ document.addEventListener('DOMContentLoaded', async () => {
                 `🕕 Jump time: *${salto}*`,
                 `🕗 Departure time: *${salida}*`
             ];
-            const target = document.getElementById(`msg-container-${lang}`);
-            if (!target) return;
-            const output = target.querySelector('.generated-output');
-            if (output) {
-                output.innerHTML = lines.map(line => `<div>${escapeHtml(line) || '&nbsp;'}</div>`).join('');
-            } else {
-                const editableArea = target.querySelector('.editable-area');
-                if (editableArea) editableArea.innerHTML = lines.map(line => `<div>${escapeHtml(line) || '&nbsp;'}</div>`).join('');
-            }
+
+            // Remove any old generated output(s) before creating the new one.
+            target.querySelectorAll('.generated-output').forEach(el => el.remove());
+            const output = document.createElement('div');
+            output.className = 'generated-output';
+            output.innerHTML = lines.map(line => `<div>${escapeHtml(line) || '&nbsp;'}</div>`).join('');
+            const header = target.querySelector('.sub-block-header');
+            if (header) target.insertBefore(output, header.nextSibling);
+            else target.prepend(output);
+
+            // Keep exactly one delete button.
+            target.querySelectorAll('.generated-delete').forEach((el, i) => { if (i > 0) el.remove(); });
+            ensureGeneratedUI();
+
             showToast(lang === 'es' ? '¡Mensaje generado con éxito!' : 'Message successfully generated!');
             scheduleSave();
         });

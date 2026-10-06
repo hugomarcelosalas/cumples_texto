@@ -380,3 +380,11 @@ header h1 {
 .confirmation-image-preview:empty {
     min-height: 30px;
 }
+
+.generated-delete {
+    margin-left: 6px;
+}
+
+.generated-output {
+    white-space: normal;
+}

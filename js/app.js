@@ -1,8 +1,102 @@
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
     const center = document.querySelector('.content-center');
-    const STORAGE_KEY = 'cumples_texto_local_state_v3';
+    const STORAGE_KEY = 'cumples_texto_local_state_v5';
+    const IMAGE_DB_NAME = 'cumples_texto_storage_v2';
+    const IMAGE_STORE_NAME = 'confirmation_images';
+    const STATE_STORE_NAME = 'app_state';
     let restoringState = false;
     let saveTimer = null;
+
+    function openImageDB() {
+        return new Promise((resolve, reject) => {
+            if (!window.indexedDB) return reject(new Error('IndexedDB no disponible'));
+            const request = indexedDB.open(IMAGE_DB_NAME, 1);
+            request.onupgradeneeded = () => {
+                const db = request.result;
+                if (!db.objectStoreNames.contains(IMAGE_STORE_NAME)) db.createObjectStore(IMAGE_STORE_NAME);
+                if (!db.objectStoreNames.contains(STATE_STORE_NAME)) db.createObjectStore(STATE_STORE_NAME);
+            };
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error || new Error('No se pudo abrir IndexedDB'));
+        });
+    }
+
+    async function saveConfirmationImage(lang, blob) {
+        const db = await openImageDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(IMAGE_STORE_NAME, 'readwrite');
+            tx.objectStore(IMAGE_STORE_NAME).put(blob, `confirmation-${lang}`);
+            tx.oncomplete = () => { db.close(); resolve(); };
+            tx.onerror = () => { db.close(); reject(tx.error); };
+        });
+    }
+
+    async function loadConfirmationImage(lang) {
+        const db = await openImageDB();
+        return new Promise((resolve, reject) => {
+            const tx = db.transaction(IMAGE_STORE_NAME, 'readonly');
+            const request = tx.objectStore(IMAGE_STORE_NAME).get(`confirmation-${lang}`);
+            request.onsuccess = () => { const value = request.result || null; db.close(); resolve(value); };
+            request.onerror = () => { db.close(); reject(request.error); };
+        });
+    }
+
+    async function deleteConfirmationImage(lang) {
+        try {
+            const db = await openImageDB();
+            await new Promise((resolve, reject) => {
+                const tx = db.transaction(IMAGE_STORE_NAME, 'readwrite');
+                tx.objectStore(IMAGE_STORE_NAME).delete(`confirmation-${lang}`);
+                tx.oncomplete = resolve;
+                tx.onerror = () => reject(tx.error);
+            });
+            db.close();
+        } catch (err) {
+            console.warn('No se pudo eliminar la imagen guardada:', err);
+        }
+    }
+
+    function renderConfirmationImage(area, blob, lang) {
+        if (!area) return;
+        const preview = area.querySelector('.confirmation-image-preview');
+        if (!preview) return;
+        preview.innerHTML = '';
+        if (!blob) return;
+        const url = URL.createObjectURL(blob);
+        const img = document.createElement('img');
+        img.src = url;
+        img.alt = 'Imagen cargada';
+        img.className = 'preview-img';
+        preview.appendChild(img);
+        const remove = document.createElement('button');
+        remove.type = 'button';
+        remove.className = 'btn-action confirmation-image-delete';
+        remove.title = 'Eliminar imagen';
+        remove.innerHTML = '<i class="fa-solid fa-trash"></i> Eliminar imagen';
+        remove.addEventListener('click', async e => {
+            e.preventDefault();
+            e.stopPropagation();
+            await deleteConfirmationImage(lang);
+            preview.innerHTML = '';
+            const input = area.querySelector('.confirmation-image-input');
+            if (input) input.value = '';
+            showToast('Imagen eliminada.');
+        });
+        preview.appendChild(remove);
+    }
+
+    async function restoreConfirmationImages() {
+        for (const lang of ['es', 'en']) {
+            const area = document.querySelector(`#block-${lang === 'es' ? 'confirmacion' : 'confirmation'}-${lang} .confirmation-image-area`);
+            if (!area) continue;
+            try {
+                const blob = await loadConfirmationImage(lang);
+                if (blob) renderConfirmationImage(area, blob, lang);
+            } catch (err) {
+                console.warn(`No se pudo restaurar la imagen ${lang}:`, err);
+            }
+        }
+    }
 
     function scheduleSave() {
         if (restoringState) return;
@@ -10,13 +104,14 @@ document.addEventListener('DOMContentLoaded', () => {
         saveTimer = setTimeout(saveState, 120);
     }
 
-    function saveState() {
+    async function saveState() {
         if (restoringState) return;
         try {
             const cleanHTML = element => {
                 if (!element) return '';
                 const clone = element.cloneNode(true);
                 clone.querySelectorAll('[data-wired]').forEach(el => el.removeAttribute('data-wired'));
+                clone.querySelectorAll('.confirmation-image-preview img, .confirmation-image-delete').forEach(el => el.remove());
                 return clone.innerHTML;
             };
             const state = {
@@ -38,20 +133,33 @@ document.addEventListener('DOMContentLoaded', () => {
                 }
             });
 
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(state));
+            const db = await openImageDB();
+            await new Promise((resolve, reject) => {
+                const tx = db.transaction(STATE_STORE_NAME, 'readwrite');
+                tx.objectStore(STATE_STORE_NAME).put(state, 'current');
+                tx.oncomplete = resolve;
+                tx.onerror = () => reject(tx.error || new Error('No se pudo guardar el estado'));
+            });
+            db.close();
         } catch (err) {
             console.warn('No se pudieron guardar los cambios localmente:', err);
-            showToast('No se pudo guardar el cambio. Puede que el almacenamiento local esté lleno.');
+            // Do not use localStorage for the app state: images and HTML can exceed its quota.
         }
     }
 
-    function restoreState() {
-        const raw = localStorage.getItem(STORAGE_KEY);
-        if (!raw) return null;
+    async function restoreState() {
         try {
-            return JSON.parse(raw);
+            const db = await openImageDB();
+            const state = await new Promise((resolve, reject) => {
+                const tx = db.transaction(STATE_STORE_NAME, 'readonly');
+                const request = tx.objectStore(STATE_STORE_NAME).get('current');
+                request.onsuccess = () => resolve(request.result || null);
+                request.onerror = () => reject(request.error);
+            });
+            db.close();
+            return state;
         } catch (err) {
-            console.warn('Estado local corrupto; se mantiene el contenido inicial.', err);
+            console.warn('No se pudo recuperar el estado local; se mantiene el contenido inicial.', err);
             return null;
         }
     }
@@ -65,8 +173,8 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    function loadSavedState() {
-        const state = restoreState();
+    async function loadSavedState() {
+        const state = await restoreState();
         if (!state) return null;
         restoringState = true;
         try {
@@ -81,8 +189,19 @@ document.addEventListener('DOMContentLoaded', () => {
         return state;
     }
 
-    function clearSavedState() {
-        localStorage.removeItem(STORAGE_KEY);
+    async function clearSavedState() {
+        try {
+            const db = await openImageDB();
+            await new Promise((resolve, reject) => {
+                const tx = db.transaction([STATE_STORE_NAME, IMAGE_STORE_NAME], 'readwrite');
+                tx.objectStore(STATE_STORE_NAME).delete('current');
+                tx.objectStore(IMAGE_STORE_NAME).delete('confirmation-es');
+                tx.objectStore(IMAGE_STORE_NAME).delete('confirmation-en');
+                tx.oncomplete = resolve;
+                tx.onerror = () => reject(tx.error);
+            });
+            db.close();
+        } catch (err) { console.warn('No se pudieron borrar los datos locales:', err); }
         showToast('Cambios locales eliminados. Recargando contenido original...');
         setTimeout(() => window.location.reload(), 500);
     }
@@ -134,7 +253,7 @@ document.addEventListener('DOMContentLoaded', () => {
         item.appendChild(btn);
     }
 
-    const savedState = loadSavedState();
+    const savedState = await loadSavedState();
 
     document.querySelectorAll('.marker-item').forEach(item => {
         wireMarker(item);
@@ -457,38 +576,22 @@ document.addEventListener('DOMContentLoaded', () => {
     setupGenerator('es');
     setupGenerator('en');
 
-    // Image upload for confirmation block 2.
+    // Image upload for confirmation/confirmation Block 2. Images are stored in IndexedDB
+    // so they survive reloads and do not consume localStorage quota.
     document.querySelectorAll('.confirmation-image-input').forEach(input => {
-        input.addEventListener('change', event => {
+        input.addEventListener('change', async event => {
             const file = event.target.files?.[0];
             if (!file || !file.type.startsWith('image/')) return;
-            const reader = new FileReader();
-            reader.onload = e => {
-                const area = input.closest('.confirmation-image-area');
-                const originalData = e.target.result;
-                const finish = data => {
-                    area.querySelector('.confirmation-image-preview').innerHTML = `<img src="${data}" alt="Imagen cargada" class="preview-img">`;
-                    scheduleSave();
-                };
-
-                // Keep uploaded images locally while avoiding unnecessary localStorage bloat.
-                if (typeof originalData === 'string' && originalData.length > 1800000 && /^data:image\/(png|jpeg|jpg|webp)$/i.test(originalData)) {
-                    const img = new Image();
-                    img.onload = () => {
-                        const maxSize = 1600;
-                        const scale = Math.min(1, maxSize / Math.max(img.naturalWidth, img.naturalHeight));
-                        const canvas = document.createElement('canvas');
-                        canvas.width = Math.max(1, Math.round(img.naturalWidth * scale));
-                        canvas.height = Math.max(1, Math.round(img.naturalHeight * scale));
-                        canvas.getContext('2d').drawImage(img, 0, 0, canvas.width, canvas.height);
-                        finish(canvas.toDataURL('image/jpeg', 0.82));
-                    };
-                    img.src = originalData;
-                } else {
-                    finish(originalData);
-                }
-            };
-            reader.readAsDataURL(file);
+            const area = input.closest('.confirmation-image-area');
+            const lang = input.closest('[id^="block-confirmacion-"]') ? 'es' : 'en';
+            try {
+                await saveConfirmationImage(lang, file);
+                renderConfirmationImage(area, file, lang);
+                showToast('Imagen guardada. Permanecerá después de actualizar.');
+            } catch (err) {
+                console.error('No se pudo guardar la imagen:', err);
+                showToast('No se pudo guardar la imagen.');
+            }
         });
     });
 
@@ -520,6 +623,9 @@ document.addEventListener('DOMContentLoaded', () => {
         const firstMarker = savedMarker || document.querySelector('.marker-item');
         if (firstMarker) activateMarker(firstMarker);
     }
+
+    // Restore uploaded confirmation images independently from localStorage.
+    restoreConfirmationImages();
 
     // Persist all manual edits (text, selects, checkboxes, generated messages, etc.).
     document.addEventListener('input', scheduleSave);

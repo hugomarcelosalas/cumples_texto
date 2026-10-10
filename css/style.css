@@ -388,3 +388,90 @@ header h1 {
 .generated-output {
     white-space: normal;
 }
+
+
+/* Marcadores laterales: un color distinto por tema, manteniendo ambos idiomas alineados. */
+.left-sidebar .marker-item:nth-child(1), .right-sidebar .marker-item:nth-child(1) { --marker-color: #2563eb; --marker-soft: #dbeafe; }
+.left-sidebar .marker-item:nth-child(2), .right-sidebar .marker-item:nth-child(2) { --marker-color: #0f766e; --marker-soft: #ccfbf1; }
+.left-sidebar .marker-item:nth-child(3), .right-sidebar .marker-item:nth-child(3) { --marker-color: #c2410c; --marker-soft: #ffedd5; }
+.left-sidebar .marker-item:nth-child(4), .right-sidebar .marker-item:nth-child(4) { --marker-color: #6d28d9; --marker-soft: #ede9fe; }
+.left-sidebar .marker-item:nth-child(5), .right-sidebar .marker-item:nth-child(5) { --marker-color: #be185d; --marker-soft: #fce7f3; }
+.left-sidebar .marker-item:nth-child(6), .right-sidebar .marker-item:nth-child(6) { --marker-color: #4d7c0f; --marker-soft: #ecfccb; }
+.sidebar .marker-item {
+    border-left: 5px solid var(--marker-color, #64748b);
+}
+.sidebar .marker-item:not(.active) {
+    background: var(--marker-soft, #f8fafc);
+    color: #334155;
+    border-color: var(--marker-soft, #e2e8f0);
+    border-left-color: var(--marker-color, #64748b);
+}
+.sidebar .marker-item.active {
+    background: var(--marker-color, #4f46e5);
+    color: #fff;
+    border-color: var(--marker-color, #4f46e5);
+    box-shadow: 0 3px 8px color-mix(in srgb, var(--marker-color, #4f46e5) 28%, transparent);
+}
+.sidebar .marker-item:not(.active):hover {
+    background: var(--marker-soft, #eef2ff);
+    border-color: var(--marker-color, #c7d2fe);
+    color: var(--marker-color, #4f46e5);
+}
+
+/* Pestañas para navegar por los bloques sin alargar la página. */
+.sub-block-tabs {
+    display: flex;
+    flex-wrap: wrap;
+    gap: .5rem;
+    margin: .25rem 0 1rem;
+    padding: .35rem;
+    background: #f1f5f9;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+}
+.sub-block-tab {
+    appearance: none;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: .65rem 1rem;
+    background: #fff;
+    color: #334155;
+    font: inherit;
+    font-weight: 650;
+    cursor: pointer;
+    transition: background .18s ease, color .18s ease, border-color .18s ease;
+}
+.sub-block-tab:hover { border-color: #4f46e5; color: #4338ca; }
+.sub-block-tab.active {
+    background: #4f46e5;
+    color: #fff;
+    border-color: #4f46e5;
+    box-shadow: 0 2px 5px rgba(79, 70, 229, .2);
+}
+.sub-block.tab-hidden { display: none !important; }
+
+/* Botón de copia grande y claro en cada bloque. */
+.sub-block-actions .btn-copy-block {
+    width: auto;
+    min-width: 145px;
+    height: 42px;
+    padding: 0 .9rem;
+    gap: .55rem;
+    border-radius: 8px;
+    background: #2563eb;
+    color: #fff;
+    font-size: .92rem;
+    font-weight: 700;
+    white-space: nowrap;
+}
+.sub-block-actions .btn-copy-block:hover {
+    background: #1d4ed8;
+    color: #fff;
+}
+.sub-block-actions .btn-copy-block i { font-size: 1rem; }
+@media (max-width: 560px) {
+    .sub-block-header { align-items: flex-start; gap: .5rem; flex-wrap: wrap; }
+    .sub-block-actions { flex-wrap: wrap; }
+    .sub-block-actions .btn-copy-block { min-width: 0; }
+    .sub-block-tab { padding: .55rem .75rem; }
+}

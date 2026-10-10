@@ -111,6 +111,8 @@ document.addEventListener('DOMContentLoaded', async () => {
                 if (!element) return '';
                 const clone = element.cloneNode(true);
                 clone.querySelectorAll('[data-wired]').forEach(el => el.removeAttribute('data-wired'));
+                clone.querySelectorAll('.sub-block-tabs').forEach(el => el.remove());
+                clone.querySelectorAll('.sub-block.tab-hidden').forEach(el => el.classList.remove('tab-hidden'));
                 clone.querySelectorAll('.confirmation-image-preview img, .confirmation-image-delete, .generated-delete').forEach(el => el.remove());
                 return clone.innerHTML;
             };
@@ -428,13 +430,55 @@ document.addEventListener('DOMContentLoaded', async () => {
         }
     }
 
+    function refreshBlockTabs(body, preferredIndex) {
+        if (!body) return;
+        const blocks = Array.from(body.querySelectorAll(':scope > .sub-block'));
+        let tabs = body.querySelector(':scope > .sub-block-tabs');
+        if (!tabs && blocks.length) {
+            tabs = document.createElement('div');
+            tabs.className = 'sub-block-tabs';
+            tabs.setAttribute('role', 'tablist');
+            body.insertBefore(tabs, blocks[0]);
+        }
+        if (!tabs) return;
+        if (!blocks.length) {
+            tabs.remove();
+            return;
+        }
+        const isEn = body.closest('.content-block')?.id?.includes('-en');
+        const previous = Number.isInteger(preferredIndex) ? preferredIndex : Number(tabs.dataset.activeIndex || 0);
+        const activeIndex = Math.max(0, Math.min(previous, blocks.length - 1));
+        tabs.dataset.activeIndex = String(activeIndex);
+        tabs.innerHTML = '';
+        blocks.forEach((block, index) => {
+            block.classList.toggle('tab-hidden', index !== activeIndex);
+            const heading = block.querySelector(':scope > .sub-block-header h4');
+            const label = heading?.textContent.trim() || (isEn ? `Block ${index + 1}` : `Bloque ${index + 1}`);
+            const tab = document.createElement('button');
+            tab.type = 'button';
+            tab.className = 'sub-block-tab' + (index === activeIndex ? ' active' : '');
+            tab.setAttribute('role', 'tab');
+            tab.setAttribute('aria-selected', String(index === activeIndex));
+            tab.textContent = label;
+            tab.addEventListener('click', () => refreshBlockTabs(body, index));
+            tabs.appendChild(tab);
+        });
+    }
+
     function wireBlock(sub) {
         if (sub.dataset.wired === 'true') return;
         sub.dataset.wired = 'true';
-        sub.querySelector('.btn-copy-sub')?.addEventListener('click', e => {
-            e.stopPropagation();
-            copyBlock(sub);
-        });
+        const copyButton = sub.querySelector('.btn-copy-sub');
+        if (copyButton) {
+            const isEn = sub.closest('.content-block')?.id?.includes('-en');
+            copyButton.classList.add('btn-copy-block');
+            copyButton.innerHTML = '<i class="fa-solid fa-copy"></i><span>' + (isEn ? 'Copy block' : 'Copiar bloque') + '</span>';
+            copyButton.type = 'button';
+            copyButton.addEventListener('click', e => {
+                e.stopPropagation();
+                copyBlock(sub);
+            });
+        }
         sub.querySelector('.btn-edit-sub')?.addEventListener('click', e => {
             e.stopPropagation();
             const area = sub.querySelector('.editable-area');
@@ -449,14 +493,17 @@ document.addEventListener('DOMContentLoaded', async () => {
             e.stopPropagation();
             const body = sub.parentElement;
             if (!confirm('¿Eliminar este bloque?')) return;
+            const bodyIndex = Array.from(body.querySelectorAll(':scope > .sub-block')).indexOf(sub);
             sub.remove();
             renumberBlocks(body);
+            refreshBlockTabs(body, Math.max(0, bodyIndex - 1));
             scheduleSave();
         });
     }
 
     function wireBlockBody(body) {
         body.querySelectorAll(':scope > .sub-block').forEach(wireBlock);
+        refreshBlockTabs(body);
         ensureBlockControls(body);
         const add = body.querySelector(':scope > .block-controls .btn-add-block');
         if (add && add.dataset.wired !== 'true') {
@@ -469,6 +516,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 block.innerHTML = `<div class="sub-block-header"><h4>${title}</h4><div class="sub-block-actions"><button class="btn-action btn-copy-sub" type="button" title="Copiar contenido"><i class="fa-solid fa-copy"></i></button><button class="btn-action btn-edit-sub" type="button" title="Editar bloque"><i class="fa-solid fa-pen"></i></button><button class="btn-action btn-delete-sub" type="button" title="Eliminar bloque"><i class="fa-solid fa-trash"></i></button></div></div><div class="editable-area" contenteditable="true"></div>`;
                 body.insertBefore(block, body.querySelector(':scope > .block-controls'));
                 wireBlock(block);
+                refreshBlockTabs(body, body.querySelectorAll(':scope > .sub-block').length - 1);
                 block.querySelector('.editable-area')?.focus();
                 scheduleSave();
             });
